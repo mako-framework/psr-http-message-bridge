@@ -1,0 +1,55 @@
+{
+    "name": "mako/psr-http-bridge",
+    "description": "PSR HTTP bridge for the Mako Framework",
+    "keywords": ["mako", "framework", "psr"],
+    "homepage": "http://makoframework.com",
+    "license": "BSD-3-Clause",
+    "authors": [
+        {
+            "name": "Frederic G. Østby",
+            "email": "frederic.g.ostby@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "mako\\bridges\\psr\\http\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "mako\\tests\\": "tests"
+        }
+    },
+    "require": {
+        "php": ">=8.5.0",
+        "psr/http-message": "^2.0",
+        "psr/http-factory": "^1.0"
+    },
+    "require-dev": {
+        "mako/framework": "^13.0.0@dev",
+        "phpstan/phpstan": "^2.1",
+        "phpunit/phpunit": "^13.3",
+        "nyholm/psr7": "^1.8",
+        "mockery/mockery": "^1.6"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    },
+    "scripts": {
+        "phpunit": "phpunit --display-incomplete --display-skipped --display-deprecations --display-errors --display-notices --display-warning --display-phpunit-deprecations",
+        "phpstan": "phpstan analyze src --no-progress --memory-limit=-1 -c phpstan.neon",
+        "qa": [
+            "@phpunit",
+            "@phpstan"
+        ]
+    },
+    "config": {
+        "allow-plugins": {
+            "php-http/discovery": false
+        }
+    }
+}
