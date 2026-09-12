@@ -79,7 +79,7 @@ final class PsrServerRequestFactory
 	/**
 	 * Returns parsed input without substituting GET query parameters.
 	 */
-	private function getParsedBody(Request $request): array
+	private function getParsedBody(Request $request): ?array
 	{
 		$realMethod = strtoupper(
 			$request->server->get('REQUEST_METHOD', $request->getMethod())
@@ -92,7 +92,9 @@ final class PsrServerRequestFactory
 			return $request->post->all();
 		}
 
-		return $request->getBody()->all();
+		$parsed = $request->getBody()->all();
+
+		return $parsed === [] ? null : $parsed;
 	}
 
 	/**

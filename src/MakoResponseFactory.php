@@ -16,6 +16,8 @@ use mako\security\signer\Signer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\StreamInterface;
 
+use function in_array;
+
 /**
  * Converts PSR-7 responses to Mako responses.
  */
@@ -46,6 +48,9 @@ final class MakoResponseFactory
 
 	/**
 	 * Updates an existing Mako response.
+	 *
+	 * Headers are appended to the existing response. Call Response::reset()
+	 * before passing the response if you want a clean slate.
 	 */
 	public function createFromExisting(
 		ResponseInterface $psrResponse,
