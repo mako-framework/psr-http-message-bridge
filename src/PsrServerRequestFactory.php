@@ -32,16 +32,16 @@ use const UPLOAD_ERR_OK;
 /**
  * Converts Mako requests to PSR-7 server requests.
  */
-final class PsrServerRequestFactory
+final readonly class PsrServerRequestFactory
 {
 	/**
 	 * Constructor.
 	 */
 	public function __construct(
-		private readonly ServerRequestFactoryInterface $serverRequestFactory,
-		private readonly UriFactoryInterface $uriFactory,
-		private readonly StreamFactoryInterface $streamFactory,
-		private readonly UploadedFileFactoryInterface $uploadedFileFactory
+		private ServerRequestFactoryInterface $serverRequestFactory,
+		private UriFactoryInterface $uriFactory,
+		private StreamFactoryInterface $streamFactory,
+		private UploadedFileFactoryInterface $uploadedFileFactory
 	) {
 	}
 

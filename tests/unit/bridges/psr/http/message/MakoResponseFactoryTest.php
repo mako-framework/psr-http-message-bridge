@@ -8,19 +8,15 @@
 namespace mako\tests\unit\bridges\psr\http\message;
 
 use mako\bridges\psr\http\message\MakoResponseFactory;
+use mako\bridges\psr\http\message\MakoResponseHydrator;
 use mako\http\Request;
 use mako\http\Response;
-use mako\http\response\CustomStatus;
-use mako\http\response\senders\Stream;
+use mako\security\signer\Signer;
 use mako\tests\TestCase;
 use Mockery;
-use Mockery\MockInterface;
 use Nyholm\Psr7\Response as PsrResponse;
-use Nyholm\Psr7\Stream as PsrStream;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Group;
-use Psr\Http\Message\StreamInterface;
-use RuntimeException;
+use Psr\Http\Message\ResponseInterface;
 
 #[Group('unit')]
 class MakoResponseFactoryTest extends TestCase
@@ -28,193 +24,82 @@ class MakoResponseFactoryTest extends TestCase
 	/**
 	 *
 	 */
-	protected function request(string $method = 'GET'): Request
+	public function testCreateReturnsHydratedResponse(): void
 	{
 		$request = Mockery::mock(Request::class);
-		$request->shouldReceive('getMethod')->andReturn($method);
 
-		return $request;
-	}
+		$psrResponse = new PsrResponse;
 
-	/**
-	 *
-	 */
-	protected function response(
-		int $status = 200,
-		string $reason = 'OK',
-		string $protocol = '1.1',
-		array $headers = [],
-		string $method = 'GET'
-	): MockInterface&Response {
-		$response = Mockery::mock(Response::class);
+		$hydrator = Mockery::mock(MakoResponseHydrator::class);
 
-		$response->shouldReceive('getRequest')->andReturn($this->request($method));
-
-		$response->shouldReceive('setProtocolVersion')
-			->once()->with($protocol)->andReturnSelf();
-
-		$response->shouldReceive('setStatus')
+		$hydrator->shouldReceive('hydrate')
 			->once()
-			->with(Mockery::on(
-				static fn ($value) => $value == new CustomStatus($status, $reason)
-			))
-			->andReturnSelf();
+			->with(Mockery::type(Response::class), $psrResponse, false);
 
-		$headerBag = $this->mockProperty($response, 'headers');
+		$response = (new MakoResponseFactory($hydrator))->create($psrResponse, $request);
 
-		if ($headers === []) {
-			$headerBag->shouldNotReceive('add');
-		}
-		else {
-			foreach ($headers as $name => $values) {
-				foreach ($values as $value) {
-					$headerBag->shouldReceive('add')
-						->once()->with($name, $value, false);
-				}
-			}
-		}
+		$this->assertInstanceOf(Response::class, $response);
 
-		return $response;
+		$this->assertSame($request, $response->getRequest());
 	}
 
 	/**
 	 *
 	 */
-	public function testCopiesMetadataAndReadsEntireSeekableBody(): void
+	public function testCreatePassesStreamFlagToHydrator(): void
 	{
-		$headers = [
-			'X-Test' => ['first', 'second'],
-			'Set-Cookie' => ['a=1; Path=/', 'b=2; Path=/'],
-		];
+		$request = Mockery::mock(Request::class);
 
-		$body = PsrStream::create('complete body');
-		$body->seek(5);
+		$psrResponse = new PsrResponse;
 
-		$psrResponse = new PsrResponse(201, $headers, $body, '2', 'Made');
-		$response = $this->response(201, 'Made', '2', $headers);
-		$response->shouldReceive('setBody')
-			->once()->with('complete body')->andReturnSelf();
+		$hydrator = Mockery::mock(MakoResponseHydrator::class);
 
-		(new MakoResponseFactory)->update($response, $psrResponse);
+		$hydrator->shouldReceive('hydrate')
+			->once()
+			->with(Mockery::type(Response::class), $psrResponse, true);
 
-		$this->assertSame(5, $body->tell());
+		(new MakoResponseFactory($hydrator))->create($psrResponse, $request, stream: true);
 	}
 
 	/**
 	 *
 	 */
-	public function testReadsNonSeekableBodyWithoutRewinding(): void
+	public function testHydratorReceivesTheReturnedResponse(): void
 	{
-		$body = Mockery::mock(StreamInterface::class);
-		$body->shouldReceive('isSeekable')->once()->andReturnFalse();
-		$body->shouldReceive('getContents')->once()->andReturn('remaining');
-		$body->shouldNotReceive('tell');
-		$body->shouldNotReceive('rewind');
-		$body->shouldNotReceive('seek');
+		$request = Mockery::mock(Request::class);
 
-		$response = $this->response();
-		$response->shouldReceive('setBody')
-			->once()->with('remaining')->andReturnSelf();
+		$psrResponse = Mockery::mock(ResponseInterface::class);
 
-		(new MakoResponseFactory)->update(
-			$response,
-			new PsrResponse(200, [], $body)
-		);
+		$hydratedResponse = null;
+
+		$hydrator = Mockery::mock(MakoResponseHydrator::class);
+
+		$hydrator->shouldReceive('hydrate')
+			->once()
+			->with(Mockery::capture($hydratedResponse), $psrResponse, false);
+
+		$response = (new MakoResponseFactory($hydrator))->create($psrResponse, $request);
+
+		$this->assertSame($response, $hydratedResponse);
 	}
 
 	/**
 	 *
 	 */
-	public function testRestoresCursorWhenReadingThrows(): void
+	public function testCreateWithSigner(): void
 	{
-		$exception = new RuntimeException('Read failed');
+		$request = Mockery::mock(Request::class);
 
-		$body = Mockery::mock(StreamInterface::class);
-		$body->shouldReceive('isSeekable')->once()->andReturnTrue();
-		$body->shouldReceive('tell')->once()->andReturn(7);
-		$body->shouldReceive('rewind')->once()->ordered();
-		$body->shouldReceive('getContents')->once()->ordered()->andThrow($exception);
-		$body->shouldReceive('seek')->once()->with(7)->ordered();
+		$signer = Mockery::mock(Signer::class);
 
-		$response = $this->response();
-		$response->shouldNotReceive('setBody');
+		$psrResponse = new PsrResponse;
 
-		$this->expectExceptionObject($exception);
+		$hydrator = Mockery::mock(MakoResponseHydrator::class);
 
-		(new MakoResponseFactory)->update(
-			$response,
-			new PsrResponse(200, [], $body)
-		);
-	}
+		$hydrator->shouldReceive('hydrate')->once();
 
-	/**
-	 *
-	 */
-	public static function bodylessResponses(): iterable
-	{
-		foreach ([false, true] as $stream) {
-			foreach ([
-				['HEAD', 200],
-				['GET', 100],
-				['GET', 101],
-				['GET', 199],
-				['GET', 204],
-				['GET', 205],
-				['GET', 304],
-			] as [$method, $status]) {
-				yield "{$method} {$status} stream=" . (int) $stream => [
-					$method, $status, $stream,
-				];
-			}
-		}
-	}
+		$response = (new MakoResponseFactory($hydrator))->create($psrResponse, $request, $signer);
 
-	/**
-	 *
-	 */
-	#[DataProvider('bodylessResponses')]
-	public function testSuppressesBody(
-		string $method,
-		int $status,
-		bool $stream
-	): void {
-		$body = Mockery::mock(StreamInterface::class);
-		$body->shouldNotReceive('isSeekable');
-		$body->shouldNotReceive('getContents');
-		$body->shouldNotReceive('rewind');
-		$body->shouldNotReceive('read');
-
-		$psrResponse = new PsrResponse($status, [], $body);
-		$response = $this->response($status, $psrResponse->getReasonPhrase(), method: $method);
-		$response->shouldReceive('setBody')->once()->with('')->andReturnSelf();
-
-		(new MakoResponseFactory)->update(
-			$response,
-			$psrResponse,
-			$stream
-		);
-	}
-
-	/**
-	 *
-	 */
-	public function testStreamingDefersReadingTheBody(): void
-	{
-		$body = Mockery::mock(StreamInterface::class);
-		$body->shouldNotReceive('isSeekable');
-		$body->shouldNotReceive('rewind');
-		$body->shouldNotReceive('getContents');
-		$body->shouldNotReceive('eof');
-		$body->shouldNotReceive('read');
-
-		$response = $this->response();
-		$response->shouldReceive('setBody')
-			->once()->with(Mockery::type(Stream::class))->andReturnSelf();
-
-		(new MakoResponseFactory)->update(
-			$response,
-			new PsrResponse(200, [], $body),
-			stream: true
-		);
+		$this->assertInstanceOf(Response::class, $response);
 	}
 }

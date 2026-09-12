@@ -40,17 +40,16 @@ $psrRequest = $factory->create($request);
 
 ```php
 use mako\bridges\psr\http\message\MakoResponseFactory;
-
-$factory = new MakoResponseFactory;
+use mako\bridges\psr\http\message\MakoResponseHydrator;
 
 // Create a new Mako response from a PSR-7 response
 
-$response = $factory->create($psrResponse, $request);
+$response = new MakoResponseFactory()->create($psrResponse, $request);
 
-// Or update an existing Mako response
+// Or hydrate an existing Mako response
 // (call $response->reset() first if you want a clean slate)
 
-$factory->update($response, $psrResponse);
+new MakoResponseHydrator()->hydrate($response, $psrResponse);
 ```
 
 ### Streaming responses
@@ -58,19 +57,21 @@ $factory->update($response, $psrResponse);
 Set the `$stream` argument to `true` to stream the response body in chunks instead of buffering it in memory. This is useful for large responses or responses of indeterminate size.
 
 ```php
-$factory->update($response, $psrResponse, stream: true);
+$hydrator = new MakoResponseHydrator;
+
+$hydrator->hydrate($response, $psrResponse, stream: true);
 ```
 
 The default chunk size is 8192 bytes and can be configured through the constructor:
 
 ```php
-$factory = new MakoResponseFactory(chunkSize: 65536);
+$hydrator = new MakoResponseHydrator(chunkSize: 65536);
 ```
 
 ### Example: running a PSR-15 handler inside a Mako controller
 
 ```php
-use mako\bridges\psr\http\message\MakoResponseFactory;
+use mako\bridges\psr\http\message\MakoResponseHydrator;
 use mako\bridges\psr\http\message\PsrServerRequestFactory;
 use mako\http\Request;
 use mako\http\Response;
@@ -95,7 +96,7 @@ class Controller
 
 		$psrResponse = $handler->handle($psrRequest);
 
-		new MakoResponseFactory()->update($response, $psrResponse);
+		new MakoResponseHydrator()->hydrate($response, $psrResponse);
 	}
 }
 ```

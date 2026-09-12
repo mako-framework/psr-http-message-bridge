@@ -30,7 +30,8 @@
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^13.3",
         "nyholm/psr7": "^1.8",
-        "mockery/mockery": "^1.6"
+        "mockery/mockery": "^1.6",
+        "dg/bypass-finals": "^1.11"
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
