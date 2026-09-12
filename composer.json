@@ -1,6 +1,6 @@
 {
-    "name": "mako/psr-http-bridge",
-    "description": "PSR HTTP bridge for the Mako Framework",
+    "name": "mako/psr-http-message-bridge",
+    "description": "PSR HTTP message bridge for the Mako Framework",
     "keywords": ["mako", "framework", "psr"],
     "homepage": "http://makoframework.com",
     "license": "BSD-3-Clause",
@@ -12,7 +12,7 @@
     ],
     "autoload": {
         "psr-4": {
-            "mako\\bridges\\psr\\http\\": "src"
+            "mako\\bridges\\psr\\http\\message\\": "src"
         }
     },
     "autoload-dev": {

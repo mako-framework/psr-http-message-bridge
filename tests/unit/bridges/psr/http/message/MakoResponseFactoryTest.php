@@ -5,9 +5,9 @@
  * @license   http://www.makoframework.com/license
  */
 
-namespace mako\tests\unit\bridges\psr\http;
+namespace mako\tests\unit\bridges\psr\http\message;
 
-use mako\bridges\psr\http\MakoResponseFactory;
+use mako\bridges\psr\http\message\MakoResponseFactory;
 use mako\http\Request;
 use mako\http\Response;
 use mako\http\response\CustomStatus;

@@ -5,10 +5,10 @@
  * @license   http://www.makoframework.com/license
  */
 
-namespace mako\tests\unit\bridges\psr\http;
+namespace mako\tests\unit\bridges\psr\http\message;
 
 use ArrayIterator;
-use mako\bridges\psr\http\PsrServerRequestFactory;
+use mako\bridges\psr\http\message\PsrServerRequestFactory;
 use mako\http\Request;
 use mako\http\request\UploadedFile;
 use mako\tests\TestCase;

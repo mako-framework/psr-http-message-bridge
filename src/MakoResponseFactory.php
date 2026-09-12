@@ -5,7 +5,7 @@
  * @license   http://www.makoframework.com/license
  */
 
-namespace mako\bridges\psr\http;
+namespace mako\bridges\psr\http\message;
 
 use Generator;
 use mako\http\Request;

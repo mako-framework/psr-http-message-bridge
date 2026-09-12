@@ -5,7 +5,7 @@
  * @license   http://www.makoframework.com/license
  */
 
-namespace mako\bridges\psr\http;
+namespace mako\bridges\psr\http\message;
 
 use mako\http\Request;
 use mako\http\request\UploadedFile;
