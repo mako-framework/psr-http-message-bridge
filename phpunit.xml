@@ -1,4 +1,9 @@
 <phpunit colors="true" bootstrap="tests/bootstrap.php">
+	<extensions>
+		<bootstrap class="DG\BypassFinals\PHPUnitExtension">
+			<parameter name="allowPaths" value="*/src/*"/>
+		</bootstrap>
+	</extensions>
 	<testsuites>
 		<testsuite name="Mako Framework Tests">
 			<directory>tests/unit</directory>
