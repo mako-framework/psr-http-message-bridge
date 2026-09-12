@@ -95,12 +95,8 @@ class MakoResponseFactoryTest extends TestCase
 		$response->shouldReceive('setBody')
 			->once()->with('complete body')->andReturnSelf();
 
-		$result = (new MakoResponseFactory)->createFromExisting(
-			$psrResponse,
-			$response
-		);
+		(new MakoResponseFactory)->update($response, $psrResponse);
 
-		$this->assertSame($response, $result);
 		$this->assertSame(5, $body->tell());
 	}
 
@@ -120,9 +116,9 @@ class MakoResponseFactoryTest extends TestCase
 		$response->shouldReceive('setBody')
 			->once()->with('remaining')->andReturnSelf();
 
-		(new MakoResponseFactory)->createFromExisting(
-			new PsrResponse(200, [], $body),
-			$response
+		(new MakoResponseFactory)->update(
+			$response,
+			new PsrResponse(200, [], $body)
 		);
 	}
 
@@ -145,9 +141,9 @@ class MakoResponseFactoryTest extends TestCase
 
 		$this->expectExceptionObject($exception);
 
-		(new MakoResponseFactory)->createFromExisting(
-			new PsrResponse(200, [], $body),
-			$response
+		(new MakoResponseFactory)->update(
+			$response,
+			new PsrResponse(200, [], $body)
 		);
 	}
 
@@ -192,9 +188,9 @@ class MakoResponseFactoryTest extends TestCase
 		$response = $this->response($status, $psrResponse->getReasonPhrase(), method: $method);
 		$response->shouldReceive('setBody')->once()->with('')->andReturnSelf();
 
-		(new MakoResponseFactory)->createFromExisting(
-			$psrResponse,
+		(new MakoResponseFactory)->update(
 			$response,
+			$psrResponse,
 			$stream
 		);
 	}
@@ -215,12 +211,10 @@ class MakoResponseFactoryTest extends TestCase
 		$response->shouldReceive('setBody')
 			->once()->with(Mockery::type(Stream::class))->andReturnSelf();
 
-		$result = (new MakoResponseFactory)->createFromExisting(
-			new PsrResponse(200, [], $body),
+		(new MakoResponseFactory)->update(
 			$response,
+			new PsrResponse(200, [], $body),
 			stream: true
 		);
-
-		$this->assertSame($response, $result);
 	}
 }

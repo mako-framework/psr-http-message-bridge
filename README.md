@@ -50,7 +50,7 @@ $response = $factory->create($psrResponse, $request);
 // Or update an existing Mako response
 // (call $response->reset() first if you want a clean slate)
 
-$response = $factory->createFromExisting($psrResponse, $response);
+$factory->update($response, $psrResponse);
 ```
 
 ### Streaming responses
@@ -58,7 +58,7 @@ $response = $factory->createFromExisting($psrResponse, $response);
 Set the `$stream` argument to `true` to stream the response body in chunks instead of buffering it in memory. This is useful for large responses or responses of indeterminate size.
 
 ```php
-$response = $factory->createFromExisting($psrResponse, $response, stream: true);
+$factory->update($response, $psrResponse, stream: true);
 ```
 
 The default chunk size is 8192 bytes and can be configured through the constructor:
@@ -83,7 +83,7 @@ class Controller
 		Request $request,
 		Response $response,
 		RequestHandlerInterface $handler
-	): Response {
+	): void {
 		$psr17Factory = new Psr17Factory;
 
 		$psrRequest = new PsrServerRequestFactory(
@@ -95,7 +95,7 @@ class Controller
 
 		$psrResponse = $handler->handle($psrRequest);
 
-		return new MakoResponseFactory()->createFromExisting($psrResponse, $response);
+		new MakoResponseFactory()->update($response, $psrResponse);
 	}
 }
 ```

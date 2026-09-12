@@ -60,11 +60,11 @@ final class MakoResponseFactory
 	 * Headers are appended to the existing response. Call Response::reset()
 	 * before passing the response if you want a clean slate.
 	 */
-	public function createFromExisting(
-		ResponseInterface $psrResponse,
+	public function update(
 		Response $response,
+		ResponseInterface $psrResponse,
 		bool $stream = false
-	): Response {
+	): void {
 		$response->setProtocolVersion($psrResponse->getProtocolVersion());
 
 		$response->setStatus(new CustomStatus(
@@ -104,8 +104,6 @@ final class MakoResponseFactory
 				}
 			}));
 		}
-
-		return $response;
 	}
 
 	/**
@@ -117,10 +115,14 @@ final class MakoResponseFactory
 		?Signer $signer = null,
 		bool $stream = false
 	): Response {
-		return $this->createFromExisting(
+		$response = new Response($request, signer: $signer);
+
+		$this->update(
+			$response,
 			$psrResponse,
-			new Response($request, signer: $signer),
 			$stream
 		);
+
+		return $response;
 	}
 }
