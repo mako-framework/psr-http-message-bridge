@@ -43,9 +43,12 @@ class MakoResponseFactoryTest extends TestCase
 		int $status = 200,
 		string $reason = 'OK',
 		string $protocol = '1.1',
-		array $headers = []
+		array $headers = [],
+		string $method = 'GET'
 	): MockInterface&Response {
 		$response = Mockery::mock(Response::class);
+
+		$response->shouldReceive('getRequest')->andReturn($this->request($method));
 
 		$response->shouldReceive('setProtocolVersion')
 			->once()->with($protocol)->andReturnSelf();
@@ -94,7 +97,6 @@ class MakoResponseFactoryTest extends TestCase
 
 		$result = (new MakoResponseFactory)->createFromExisting(
 			$psrResponse,
-			$this->request(),
 			$response
 		);
 
@@ -120,7 +122,6 @@ class MakoResponseFactoryTest extends TestCase
 
 		(new MakoResponseFactory)->createFromExisting(
 			new PsrResponse(200, [], $body),
-			$this->request(),
 			$response
 		);
 	}
@@ -146,7 +147,6 @@ class MakoResponseFactoryTest extends TestCase
 
 		(new MakoResponseFactory)->createFromExisting(
 			new PsrResponse(200, [], $body),
-			$this->request(),
 			$response
 		);
 	}
@@ -189,12 +189,11 @@ class MakoResponseFactoryTest extends TestCase
 		$body->shouldNotReceive('read');
 
 		$psrResponse = new PsrResponse($status, [], $body);
-		$response = $this->response($status, $psrResponse->getReasonPhrase());
+		$response = $this->response($status, $psrResponse->getReasonPhrase(), method: $method);
 		$response->shouldReceive('setBody')->once()->with('')->andReturnSelf();
 
 		(new MakoResponseFactory)->createFromExisting(
 			$psrResponse,
-			$this->request($method),
 			$response,
 			$stream
 		);
@@ -218,7 +217,6 @@ class MakoResponseFactoryTest extends TestCase
 
 		$result = (new MakoResponseFactory)->createFromExisting(
 			new PsrResponse(200, [], $body),
-			$this->request(),
 			$response,
 			stream: true
 		);

@@ -24,6 +24,14 @@ use function in_array;
 final class MakoResponseFactory
 {
 	/**
+	 * Constructor.
+	 */
+	public function __construct(
+		private readonly int $chunkSize = 8192
+	) {
+	}
+
+	/**
 	 * Reads the body, preserving the cursor when seeking is supported.
 	 *
 	 * Non-seekable streams are read from their current position.
@@ -54,7 +62,6 @@ final class MakoResponseFactory
 	 */
 	public function createFromExisting(
 		ResponseInterface $psrResponse,
-		Request $request,
 		Response $response,
 		bool $stream = false
 	): Response {
@@ -74,7 +81,7 @@ final class MakoResponseFactory
 		$body = $psrResponse->getBody();
 		$statusCode = $psrResponse->getStatusCode();
 
-		$hasBody = $request->getMethod() !== 'HEAD'
+		$hasBody = $response->getRequest()->getMethod() !== 'HEAD'
 			&& $statusCode >= 200
 			&& !in_array($statusCode, [204, 205, 304], true);
 
@@ -85,13 +92,15 @@ final class MakoResponseFactory
 			$response->setBody($this->readBody($body));
 		}
 		else {
-			$response->setBody(new Stream(static function () use ($body): Generator {
+			$chunkSize = $this->chunkSize;
+
+			$response->setBody(new Stream(static function () use ($body, $chunkSize): Generator {
 				if ($body->isSeekable()) {
 					$body->rewind();
 				}
 
 				while (!$body->eof()) {
-					yield $body->read(8192);
+					yield $body->read($chunkSize);
 				}
 			}));
 		}
@@ -110,7 +119,6 @@ final class MakoResponseFactory
 	): Response {
 		return $this->createFromExisting(
 			$psrResponse,
-			$request,
 			new Response($request, signer: $signer),
 			$stream
 		);
