@@ -7,7 +7,7 @@ Converts between [Mako](https://makoframework.com) HTTP requests/responses and [
 
 ## Requirements
 
-* Mako 13.0+
+* Mako ^13.0
 * A PSR-7/PSR-17 implementation (e.g. [nyholm/psr7](https://github.com/Nyholm/psr7))
 
 ## Installation
