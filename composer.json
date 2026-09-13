@@ -22,11 +22,11 @@
     },
     "require": {
         "php": ">=8.5.0",
+        "mako/framework": "^13.0.0@dev",
         "psr/http-message": "^2.0",
         "psr/http-factory": "^1.0"
     },
     "require-dev": {
-        "mako/framework": "^13.0.0@dev",
         "phpstan/phpstan": "^2.1",
         "phpunit/phpunit": "^13.3",
         "nyholm/psr7": "^1.8",
