@@ -24,11 +24,11 @@
         "php": ">=8.5.0",
         "mako/framework": "^13.0.0@dev",
         "psr/http-message": "^2.0",
-        "psr/http-factory": "^1.0"
+        "psr/http-factory": "^1.1"
     },
     "require-dev": {
-        "phpstan/phpstan": "^2.1",
-        "phpunit/phpunit": "^13.3",
+        "phpstan/phpstan": "^2.3",
+        "phpunit/phpunit": "^13.4",
         "nyholm/psr7": "^1.8",
         "mockery/mockery": "^1.6",
         "dg/bypass-finals": "^1.11"
